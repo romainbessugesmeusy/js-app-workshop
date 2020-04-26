@@ -38,7 +38,9 @@ firebaseClient.interceptors.request.use(function (config) {
   });
 });
 
-app.get("/api/links", (req, res) => {
+const router = express.Router();
+
+router.get("/links", (req, res) => {
   db.collection("dynamic_links")
     .get()
     .then((snapshot) => {
@@ -49,7 +51,7 @@ app.get("/api/links", (req, res) => {
     });
 });
 
-app.get("/api/links/:linkId", (req, res) => {
+router.get("/links/:linkId", (req, res) => {
   getClient()
     .then((client) => {
       res.json({
@@ -61,9 +63,8 @@ app.get("/api/links/:linkId", (req, res) => {
     });
 });
 
-app.delete("/api/links/:linkId", (req, res) => {});
-
-app.post("/api/links", (req, res) => {
+router.delete("/links/:linkId", (req, res) => {});
+router.post("/links", (req, res) => {
   firebaseClient
     .post(`shortLinks`, {
       dynamicLinkInfo: {
@@ -87,5 +88,5 @@ app.post("/api/links", (req, res) => {
       res.status(400).json(reason.response.data);
     });
 });
-
+app.use(process.env.API_BASE_PATH, router);
 module.exports.handler = serverless(app);
