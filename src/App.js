@@ -6,12 +6,14 @@ import CreateLinkQuickAction from "./components/CreateLinkQuickAction";
 
 class EventBus {
   listeners = [];
+  // addEventListener
   on(event, callback) {
     if (typeof callback !== "function") {
       throw new Error("Callback must be a function");
     }
     this.listeners.push({ event, callback });
   }
+  // trigger
   dispatch(event, payload) {
     this.listeners
       .filter((l) => l.event === event)
@@ -19,8 +21,8 @@ class EventBus {
   }
 }
 
-function App() {
 
+function App() {
   const apiClient = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
   });
@@ -29,12 +31,7 @@ function App() {
 
   return (
     <div className="App">
-      <CreateLinkQuickAction
-        apiClient={apiClient}
-        onChange={(createdLink) =>
-          eventBus.dispatch("links:change", createdLink)
-        }
-      />
+      <CreateLinkQuickAction apiClient={apiClient} eventBus={eventBus} />
       <Router>
         <Listing path="/" apiClient={apiClient} eventBus={eventBus} />
       </Router>

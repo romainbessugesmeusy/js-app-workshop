@@ -6,4 +6,6 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-module.exports = { db: admin.firestore() };
+// CommonJS
+module.exports.db  = admin.firestore();
+module.exports.collection = admin.firestore().collection('dynamic_links');

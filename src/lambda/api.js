@@ -4,7 +4,8 @@
 require("dotenv").config();
 
 const { getClient } = require("./utils/googleapis");
-const { db } = require("./utils/firebase");
+const { collection } = require("./utils/firebase");
+
 // Axios est le client HTTP que nous utiliserons pour faire les
 // appels à l'API de Firebase Dynamic Link.
 // Il est possible de passer par des functions plus natives (request ou fetch)
@@ -41,12 +42,13 @@ firebaseClient.interceptors.request.use(function (config) {
 const router = express.Router();
 
 router.get("/links", (req, res) => {
-  db.collection("dynamic_links")
+  collection
+    .orderBy("createdAt", "desc")
     .get()
     .then((snapshot) => {
       let docs = [];
       // On ne peut pas utiliser .map() parce que ce n'est pas un array
-      snapshot.forEach((doc) => docs.push(doc.data()));
+      snapshot.forEach((doc) => docs.push({ ...doc.data(), id: doc.id }));
       res.json(docs);
     });
 });
@@ -64,6 +66,7 @@ router.get("/links/:linkId", (req, res) => {
 });
 
 router.delete("/links/:linkId", (req, res) => {});
+
 router.post("/links", (req, res) => {
   firebaseClient
     .post(`shortLinks`, {
@@ -73,11 +76,12 @@ router.post("/links", (req, res) => {
       },
     })
     .then((response) => {
-      db.collection("dynamic_links")
+      collection
         .add({
           url: req.body.url,
-          shortLink: response.data.shortLink,
-          createdAd: new Date(),
+          client: req.body.client,
+          shortLink: response ? response.data.shortLink : null,
+          createdAt: new Date(),
         })
         .then((r) => {
           console.log("successfully saved link", r);
@@ -85,7 +89,7 @@ router.post("/links", (req, res) => {
         });
     })
     .catch((reason) => {
-      res.status(400).json(reason.response.data);
+      res.status(400).json(reason);
     });
 });
 app.use(process.env.API_BASE_PATH, router);

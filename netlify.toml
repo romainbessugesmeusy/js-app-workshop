@@ -9,4 +9,3 @@
   command = "yarn build"
   publish = "build"
   functions = "lambda"
-  environment = { TEST = "test" }
